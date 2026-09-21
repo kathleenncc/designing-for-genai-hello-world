@@ -7,6 +7,7 @@ export default async function Home() {
         .order("id");
 
     if (error) {
+        console.error("Supabase error:", error);
         return <main>Could not load frozen yogurt spots.</main>;
     }
 
