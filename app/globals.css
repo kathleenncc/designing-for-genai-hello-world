@@ -1,26 +1,131 @@
-@import "tailwindcss";
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  margin: 0;
+  background: #f7f7f8;
+  color: #18181b;
   font-family: Arial, Helvetica, sans-serif;
+}
+
+.page {
+  width: min(760px, 90%);
+  margin: 0 auto;
+  padding: 80px 0 40px;
+}
+
+.hero {
+  margin-bottom: 48px;
+}
+
+.hero h1 {
+  margin: 0 0 12px;
+  font-size: clamp(42px, 7vw, 64px);
+  letter-spacing: -0.04em;
+}
+
+.hero p {
+  margin: 0;
+  max-width: 570px;
+  color: #71717a;
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+.caption-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.caption-card {
+  padding: 24px;
+  background: #ffffff;
+  border: 1px solid #e4e4e7;
+  border-radius: 14px;
+}
+
+.template-name {
+  margin: 0 0 10px;
+  color: #6d5dfc;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.caption-text {
+  margin: 0 0 20px;
+  font-size: 18px;
+  line-height: 1.55;
+}
+
+details {
+  border-top: 1px solid #eeeeef;
+  padding-top: 16px;
+}
+
+summary {
+  width: fit-content;
+  color: #52525b;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+summary:hover {
+  color: #6d5dfc;
+}
+
+.meme-container {
+  margin-top: 18px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: #f1f1f3;
+}
+
+.meme-image {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+footer {
+  margin-top: 48px;
+  padding-top: 24px;
+  border-top: 1px solid #e4e4e7;
+  color: #a1a1aa;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+@media (max-width: 600px) {
+  .page {
+    padding-top: 48px;
+  }
+
+  .caption-card {
+    padding: 20px;
+  }
+
+  .caption-text {
+    font-size: 16px;
+  }
+}
+.shuffle-button {
+  display: inline-block;
+  margin-top: 22px;
+  padding: 11px 16px;
+  background: #18181b;
+  color: white;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  transition: opacity 0.2s ease;
+}
+
+.shuffle-button:hover {
+  opacity: 0.8;
 }
