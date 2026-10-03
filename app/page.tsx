@@ -1,6 +1,8 @@
 import { createClient } from "@/utils/supabase/server";
 import GoogleLoginButton from "@/app/components/GoogleLoginButton";
 import SignOutButton from "@/app/components/SignOutButton";
+import GenerateCaptionForm from "@/app/components/GenerateCaptionForm";
+import VoteButtons from "@/app/components/VoteButtons";
 import Link from "next/link";
 
 export default async function Home() {
@@ -16,12 +18,26 @@ export default async function Home() {
                 <h1>Meme Captions</h1>
 
                 <p className="intro">
-                    Sign in with Google to view the meme collection.
+                    Sign in with Google to view, create, and rate AI-generated meme captions.
                 </p>
 
                 <GoogleLoginButton />
             </main>
         );
+    }
+
+    const { data: generations, error: generationsError } = await supabase
+        .from("generations")
+        .select(`
+      *,
+      votes (
+        vote
+      )
+    `)
+        .order("created_at", { ascending: false });
+
+    if (generationsError) {
+        console.error("Generations error:", generationsError);
     }
 
     const { data: allMemes, error } = await supabase
@@ -38,12 +54,10 @@ export default async function Home() {
 
     const memes = allMemes
         .filter((meme: any) => {
-            // Skip this template because its image URL is broken
             if (meme.meme_label === "Mocking Spongebob") {
                 return false;
             }
 
-            // Skip templates we have already displayed
             if (seenTemplates.has(meme.meme_label)) {
                 return false;
             }
@@ -58,12 +72,65 @@ export default async function Home() {
             <h1>Meme Captions</h1>
 
             <p className="intro">
-                a collection of meme captions from the ImgFlip dataset.
+                Generate, discover, and rate AI meme captions inspired by college life and New York City.
+
             </p>
+
+            <GenerateCaptionForm />
+
+            <br />
 
             <Link href="/profile">Profile</Link>
 
+            <br />
+            <br />
+
             <SignOutButton />
+
+            <hr />
+
+            <h2>Rate the Latest AI Captions</h2>
+
+            {generations && generations.length > 0 ? (
+                <div>
+                    {generations.map((generation: any) => {
+                        const upvotes =
+                            generation.votes?.filter((vote: any) => vote.vote === 1).length ?? 0;
+
+                        const downvotes =
+                            generation.votes?.filter((vote: any) => vote.vote === -1).length ?? 0;
+
+                        const score = upvotes - downvotes;
+
+                        return (
+                            <div key={generation.id}>
+                                <p>
+                                    <strong>Prompt:</strong> {generation.prompt}
+                                </p>
+
+                                <p>
+                                    <strong>AI Caption:</strong> {generation.generated_text}
+                                </p>
+
+                                <p>
+                                    👍 {upvotes} &nbsp; 👎 {downvotes} &nbsp; Score: {score}
+                                </p>
+
+                                <VoteButtons
+                                    generationId={generation.id}
+                                    userId={user.id}
+                                />
+
+                                <hr />
+                            </div>
+                        );
+                    })}
+                </div>
+            ) : (
+                <p>No AI-generated captions yet.</p>
+            )}
+
+            <h2>Dataset Meme Captions</h2>
 
             <div className="meme-list">
                 {memes.map((meme: any) => (
