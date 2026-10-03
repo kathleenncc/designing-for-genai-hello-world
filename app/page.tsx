@@ -1,6 +1,29 @@
-import { supabase } from "@/utils/supabase/client";
+import { createClient } from "@/utils/supabase/server";
+import GoogleLoginButton from "@/app/components/GoogleLoginButton";
+import SignOutButton from "@/app/components/SignOutButton";
+import Link from "next/link";
 
 export default async function Home() {
+    const supabase = await createClient();
+
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+        return (
+            <main className="page">
+                <h1>Meme Captions</h1>
+
+                <p className="intro">
+                    Sign in with Google to view the meme collection.
+                </p>
+
+                <GoogleLoginButton />
+            </main>
+        );
+    }
+
     const { data: allMemes, error } = await supabase
         .from("meme_captions")
         .select("*")
@@ -37,6 +60,10 @@ export default async function Home() {
             <p className="intro">
                 a collection of meme captions from the ImgFlip dataset.
             </p>
+
+            <Link href="/profile">Profile</Link>
+
+            <SignOutButton />
 
             <div className="meme-list">
                 {memes.map((meme: any) => (
