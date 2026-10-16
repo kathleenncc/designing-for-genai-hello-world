@@ -12,12 +12,12 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata = {
-  title: "Meme Captions",
-  description: "a collection of meme captions from the ImgFlip dataset.",
+export const metadata: Metadata = {
+  title: "Caption Studio",
+  description: "Your photos, your vibe. Create and rate captions that sound like you.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="en"

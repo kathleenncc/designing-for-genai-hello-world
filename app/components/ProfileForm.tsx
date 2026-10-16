@@ -29,7 +29,9 @@ export default function ProfileForm({
                 last_name: last,
                 updated_at: new Date().toISOString(),
             })
-            .eq("id", userId);
+            .eq("id", userId)
+            .select("id")
+            .single();
 
         if (error) {
             console.error(error);
@@ -76,7 +78,9 @@ export default function ProfileForm({
                 avatar_url: publicUrl,
                 updated_at: new Date().toISOString(),
             })
-            .eq("id", userId);
+            .eq("id", userId)
+            .select("id")
+            .single();
 
         if (profileError) {
             console.error(profileError);
@@ -101,9 +105,10 @@ export default function ProfileForm({
             )}
 
             <div>
-                <label>Profile photo</label>
+                <label htmlFor="avatar">Profile photo</label>
                 <br />
                 <input
+                    id="avatar"
                     type="file"
                     accept="image/*"
                     onChange={handlePhotoUpload}
@@ -113,10 +118,11 @@ export default function ProfileForm({
             <br />
 
             <div>
-                <label>First name</label>
+                <label htmlFor="first-name">First name</label>
                 <br />
                 <input
                     type="text"
+                    id="first-name"
                     value={first}
                     onChange={(e) => setFirst(e.target.value)}
                 />
@@ -125,10 +131,11 @@ export default function ProfileForm({
             <br />
 
             <div>
-                <label>Last name</label>
+                <label htmlFor="last-name">Last name</label>
                 <br />
                 <input
                     type="text"
+                    id="last-name"
                     value={last}
                     onChange={(e) => setLast(e.target.value)}
                 />

@@ -37,7 +37,7 @@ export default async function ProfilePage() {
 
             <br />
 
-            <Link href="/">Back to Memes</Link>
+            <Link href="/">Back to Caption Studio</Link>
         </main>
     );
 }
