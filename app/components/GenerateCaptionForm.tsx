@@ -1,15 +1,26 @@
 "use client";
-import { setPickerSession } from "@/utils/picker-session";
 
-
-import { useState, type FormEvent, type ChangeEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent, type ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
 
-
+import VoteButtons from "./VoteButtons";
 
 const vibes = ["Casual", "Witty", "Chic", "Playful", "Minimal"];
 export default function GenerateCaptionForm({ userId }: { userId: string }) {
   const router = useRouter();
+  const resultsRef = useRef<HTMLElement>(null);
+  const [results, setResults] = useState<{ id: number; generated_text: string }[]>([]);
+  const [copyMessage, setCopyMessage] = useState("");
+  useEffect(() => {
+    if (results.length) {
+      resultsRef.current?.focus({ preventScroll: true });
+      if (window.matchMedia("(max-width: 900px)").matches) resultsRef.current?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" });
+    }
+  }, [results]);
+  async function copyCaption(text: string) {
+    try { await navigator.clipboard.writeText(text); setCopyMessage("Caption copied—ready for Instagram."); }
+    catch { setCopyMessage("Couldn’t copy automatically. Select the caption text to copy it."); }
+  }
   const [photos, setPhotos] = useState<{ id: string; name: string; data: string }[]>([]);
   const [vibe, setVibe] = useState("Casual");
   const [length, setLength] = useState("Short");
@@ -75,19 +86,22 @@ export default function GenerateCaptionForm({ userId }: { userId: string }) {
     if (!photos.length || reading) { setMessage("Add a photo first."); return; }
     setLoading(true);
     setMessage("");
+    setResults([]);
+    setCopyMessage("");
     try {
       const response = await fetch("/api/generate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ photos: photos.map(photo => photo.data), vibe, length, context, examples }) });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Couldn’t generate captions. Please try again.");
-      setPickerSession({ userId, photos, captions: data.generations, vibe, length, context, examples });
-      router.push("/pick");
+      setResults(data.generations);
+      setMessage("Three captions saved to your account.");
+      router.refresh();
     } catch (error) { setMessage(error instanceof Error ? error.message : "Connection interrupted. Please try again."); }
     finally { setLoading(false); }
   }
 
-  return <div className="studio-workspace create-workspace"><form className="studio" onSubmit={generate} aria-busy={loading}>
+  return <div className="studio-workspace"><form className="studio" onSubmit={generate} aria-busy={loading}>
     <fieldset disabled={loading || reading} className="photo-panel">
-      <p className="eyebrow">01 — PHOTOGRAPHS</p><h2>Your next post.</h2><p className="panel-description">One photograph or a collection. Start with what you want to share.</p>
+      <p className="eyebrow">01 / YOUR CAMERA ROLL</p><h2>One photo or a whole dump.</h2>
       {photos.length > 0 && <div className="photo-grid">{photos.map((photo, index) => <div className="photo-tile" key={photo.id}>
         {/* Local previews are already resized and don't need remote image optimization. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -100,22 +114,30 @@ export default function GenerateCaptionForm({ userId }: { userId: string }) {
         <input id="photos" name="photos" type="file" multiple accept="image/jpeg,image/png,image/webp" onChange={selectPhotos} />
       </label>}
       <p className="small-note">{photos.length} / 10 photos · JPG, PNG or WebP · Up to 10 MB each</p>
-      <details className="privacy-details"><summary>Photo privacy · processed by Google Gemini</summary><p className="privacy-note">Your photos are resized and sent to Google Gemini to create captions. Photos stay in this tab for your preview and aren’t saved to your account. Your captions and preferences are saved.</p></details>
+      <p className="privacy-note">Your photos are resized and sent to Google Gemini to create captions. Your resized photos, captions, preferences, and generation activity are saved privately to your account and can be reviewed by studio administrators.</p>
     </fieldset>
     <fieldset disabled={loading || reading} className="controls-panel">
-      <p className="eyebrow">02 — DIRECTION</p><h2>The details.</h2>
+      <p className="eyebrow">02 / YOUR ENERGY</p><h2>Make it sound like you.</h2>
       <div className="field-label" id="vibe-label">What’s the vibe?</div>
       <div className="chips" role="group" aria-labelledby="vibe-label">{vibes.map(option => <button type="button" key={option} className={vibe === option ? "chip selected" : "chip"} aria-pressed={vibe === option} onClick={() => setVibe(option)}>{option}</button>)}</div>
-      <label className="field-label" htmlFor="length">Length</label>
+      <label className="field-label" htmlFor="length">Keep it…</label>
       <select id="length" value={length} onChange={e => setLength(e.target.value)}><option>Short</option><option>Medium</option></select>
       <label className="field-label" htmlFor="context">A little context <span>(optional)</span></label>
       <textarea id="context" maxLength={500} rows={2} value={context} onChange={e => setContext(e.target.value)} placeholder="A weekend of coffee, friends, and little moments. Casual, no hashtags." />
-      <details><summary>Personal style</summary><label className="field-label" htmlFor="examples">Captions you’ve used or loved</label><textarea id="examples" maxLength={500} rows={2} value={examples} onChange={e => setExamples(e.target.value)} placeholder="a little bit of everything / life lately" /></details>
-      <button className="primary-button" type="submit" disabled={!photos.length || loading || reading}>{loading ? "Finding your words…" : reading ? "Preparing photos…" : "Create captions →"}</button>
+      <details><summary>Have a signature style?</summary><label className="field-label" htmlFor="examples">Captions you’ve used or loved</label><textarea id="examples" maxLength={500} rows={2} value={examples} onChange={e => setExamples(e.target.value)} placeholder="a little bit of everything / life lately" /></details>
+      <button className="primary-button" type="submit" disabled={!photos.length || loading || reading}>{loading ? "Finding your words…" : reading ? "Preparing photos…" : "Generate 3 captions ↗"}</button>
 
-      {loading && <p className="generation-progress" role="status"><span className="loading-dot" aria-hidden="true" />Finding your words. Your photo-and-caption picker opens when ready.</p>}
       <p className="status" role="status" aria-live="polite">{message}</p>
     </fieldset>
   </form>
-</div>;
+  <section className="fresh-results" ref={resultsRef} tabIndex={-1} aria-labelledby="results-title">
+    <p className="eyebrow">03 / YOUR WORDS</p><h2 id="results-title">{results.length ? "Which one feels like you?" : loading ? "Finding your words…" : "Your captions go here."}</h2>
+    {!results.length && <div className="results-placeholder" role="status">{loading ? <><span className="loading-dot" aria-hidden="true" /><p>Considering your photos and your chosen vibe.<br />Three caption options are on their way.</p></> : <><span className="placeholder-mark" aria-hidden="true">✳</span><p>A little inspiration for your next post.<br />Add your photos and we’ll take it from here.</p></>}</div>}
+    {results.length > 0 && <p className="small-note">Saved to your account. Copy a favorite, or rate each option.</p>}
+    <div className="caption-grid">{results.map(result => <article className="caption-card" key={result.id}>
+      <p className="caption-text">{result.generated_text}</p>
+      <button type="button" className="copy-caption" onClick={() => copyCaption(result.generated_text)}>Copy caption</button>
+      <VoteButtons generationId={result.id} userId={userId} />
+    </article>)}</div><p role="status" className="small-note">{copyMessage}</p>
+  </section></div>;
 }
