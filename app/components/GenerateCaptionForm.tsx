@@ -34,6 +34,19 @@ export default function GenerateCaptionForm({ userId, handle, avatarUrl }: { use
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [reading, setReading] = useState(false);
+  const dragIndex = useRef<number | null>(null);
+  const [dropIndex, setDropIndex] = useState<number | null>(null);
+  function movePhoto(from: number, to: number) {
+    if (from === to || to < 0) return;
+    setPhotos(current => {
+      if (to >= current.length) return current;
+      const next = [...current];
+      const [moved] = next.splice(from, 1);
+      next.splice(to, 0, moved);
+      return next;
+    });
+  }
+  const livePhotos = photos.map(photo => photo.data);
 
   async function selectPhotos(event: ChangeEvent<HTMLInputElement>) {
     const files = Array.from(event.target.files ?? []);
@@ -109,45 +122,53 @@ export default function GenerateCaptionForm({ userId, handle, avatarUrl }: { use
 
   return <div className="studio-workspace"><form className="studio" onSubmit={generate} aria-busy={loading}>
     <fieldset disabled={loading || reading} className="photo-panel">
-      <p className="eyebrow">01 / YOUR CAMERA ROLL</p><h2>One photo or a whole dump.</h2>
-      {photos.length > 0 && <div className="photo-grid">{photos.map((photo, index) => <div className="photo-tile" key={photo.id}>
+      <p className="eyebrow">01 — Photographs</p><h2>Your next <em>post.</em></h2>
+      {photos.length > 0 && <div className="photo-grid">{photos.map((photo, index) => <div className={`photo-tile${dropIndex === index ? " drop-target" : ""}`} key={photo.id} draggable={photos.length > 1} onDragStart={event => { dragIndex.current = index; event.dataTransfer.effectAllowed = "move"; }} onDragOver={event => { event.preventDefault(); setDropIndex(index); }} onDragLeave={() => setDropIndex(current => current === index ? null : current)} onDrop={event => { event.preventDefault(); if (dragIndex.current !== null) movePhoto(dragIndex.current, index); dragIndex.current = null; setDropIndex(null); }} onDragEnd={() => { dragIndex.current = null; setDropIndex(null); }}>
         {/* Local previews are already resized and don't need remote image optimization. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={photo.data} alt={`Selected photo ${index + 1}: ${photo.name}`} />
+        <img src={photo.data} alt={`Selected photo ${index + 1}: ${photo.name}`} draggable={false} />
         <button type="button" className="remove-photo" aria-label={`Remove photo ${index + 1}: ${photo.name}`} onClick={() => setPhotos(current => current.filter(item => item.id !== photo.id))}>×</button>
-        <span className="photo-number">{index + 1}</span>
+        <span className="photo-number">{index === 0 ? "Cover" : index + 1}</span>
+        {photos.length > 1 && <span className="photo-move">
+          <button type="button" disabled={index === 0} aria-label={`Move photo ${index + 1} earlier`} onClick={() => movePhoto(index, index - 1)}>‹</button>
+          <button type="button" disabled={index === photos.length - 1} aria-label={`Move photo ${index + 1} later`} onClick={() => movePhoto(index, index + 1)}>›</button>
+        </span>}
       </div>)}</div>}
+      {photos.length > 1 && <p className="small-note reorder-hint">Drag photos, or use ‹ ›, to change the order. The first one is your cover.</p>}
       {photos.length < 10 && <label className={`upload-area ${photos.length ? "add-more" : ""}`} htmlFor="photos">
-        <span className="upload-icon" aria-hidden="true">＋</span><strong>{photos.length ? "Add more photos" : "Pick your moments"}</strong><span>Choose one or more from your camera roll</span>
+        <span className="upload-icon" aria-hidden="true">+</span><strong>{photos.length ? "Add more" : "Select photographs"}</strong><span>One image or a whole series, up to ten</span>
         <input id="photos" name="photos" type="file" multiple accept="image/jpeg,image/png,image/webp" onChange={selectPhotos} />
       </label>}
       <p className="small-note">{photos.length} / 10 photos · JPG, PNG or WebP · Up to 10 MB each</p>
       <p className="privacy-note">Your photos are resized and sent to Google Gemini to create captions. Your resized photos, captions, preferences, and generation activity are saved privately to your account and can be reviewed by studio administrators.</p>
     </fieldset>
     <fieldset disabled={loading || reading} className="controls-panel">
-      <p className="eyebrow">02 / YOUR ENERGY</p><h2>Make it sound like you.</h2>
-      <div className="field-label" id="vibe-label">What’s the vibe?</div>
+      <p className="eyebrow">02 — Direction</p><h2>Set the <em>tone.</em></h2>
+      <div className="field-label" id="vibe-label">Tone</div>
       <div className="chips" role="group" aria-labelledby="vibe-label">{vibes.map(option => <button type="button" key={option} className={vibe === option ? "chip selected" : "chip"} aria-pressed={vibe === option} onClick={() => setVibe(option)}>{option}</button>)}</div>
-      <label className="field-label" htmlFor="length">Keep it…</label>
+      <label className="field-label" htmlFor="length">Length</label>
       <select id="length" value={length} onChange={e => setLength(e.target.value)}><option>Short</option><option>Medium</option></select>
       <label className="field-label" htmlFor="context">A little context <span>(optional)</span></label>
       <textarea id="context" maxLength={500} rows={2} value={context} onChange={e => setContext(e.target.value)} placeholder="A weekend of coffee, friends, and little moments. Casual, no hashtags." />
-      <details><summary>Have a signature style?</summary><label className="field-label" htmlFor="examples">Captions you’ve used or loved</label><textarea id="examples" maxLength={500} rows={2} value={examples} onChange={e => setExamples(e.target.value)} placeholder="a little bit of everything / life lately" /></details>
-      <button className="primary-button" type="submit" disabled={!photos.length || loading || reading}>{loading ? "Finding your words…" : reading ? "Preparing photos…" : "Generate 3 captions ↗"}</button>
+      <details><summary>Personal style</summary><label className="field-label" htmlFor="examples">Captions you’ve used or loved</label><textarea id="examples" maxLength={500} rows={2} value={examples} onChange={e => setExamples(e.target.value)} placeholder="a little bit of everything / life lately" /></details>
+      <button className="primary-button" type="submit" disabled={!photos.length || loading || reading}>{loading ? "Finding your words…" : reading ? "Preparing photos…" : "Write three captions"}</button>
 
       <p className="status" role="status" aria-live="polite">{message}</p>
     </fieldset>
   </form>
   <section className="fresh-results" ref={resultsRef} tabIndex={-1} aria-labelledby="results-title">
-    <p className="eyebrow">03 / YOUR WORDS</p><h2 id="results-title">{results.length ? "Which one feels like you?" : loading ? "Finding your words…" : "Your captions go here."}</h2>
+    <p className="eyebrow">03 — Captions</p><h2 id="results-title">{results.length ? <>Which one feels like <em>you?</em></> : loading ? <>Finding your <em>words…</em></> : <>Your <em>words.</em></>}</h2>
     {!results.length && loading && <div className="results-placeholder" role="status"><span className="loading-dot" aria-hidden="true" /><p>Considering your photos and your chosen vibe.<br />Three caption options are on their way.</p></div>}
-    {!results.length && !loading && <div className="sample-post">
-      <p className="small-note">Here’s an example in a <strong>{vibe}</strong> vibe. Add your photos and we’ll write three like this, just for you.</p>
+    {!results.length && !loading && (photos.length ? <div className="sample-post">
+      <p className="small-note">This is your post so far. Reorder your photos to see the sequence, then generate captions.</p>
+      <InstagramPreview photos={livePhotos} caption="Your caption will appear here." placeholder handle={handle} avatarUrl={avatarUrl} />
+    </div> : <div className="sample-post">
+      <p className="small-note">An example in a <em>{vibe.toLowerCase()}</em> tone. Add your photos and we’ll write three like this, just for you.</p>
       <InstagramPreview photos={samplePhotos} caption={sampleCaptions[vibe] ?? sampleCaptions.Casual} handle={handle} avatarUrl={avatarUrl} />
-      <p className="eyebrow sample-label">EXAMPLE POST · TRY ANOTHER VIBE TO SEE IT CHANGE</p>
-    </div>}
-    {results.length > 0 && voice && <p className={voice.saved ? "voice-badge tuned" : "voice-badge"}>{voice.saved ? <><span aria-hidden="true">✦</span> Tuned to your voice · learned from {voice.saved} saved caption{voice.saved === 1 ? "" : "s"}{voice.rejected ? ` and ${voice.rejected} you passed on` : ""}</> : <><span aria-hidden="true">✦</span> Save the captions that sound like you, and your next ones will sound more like you.</>}</p>}
-    {results.length > 0 && <InstagramPreview photos={previewPhotos} caption={(results.find(result => result.id === previewId) ?? results[0]).generated_text} handle={handle} avatarUrl={avatarUrl} />}
+      <p className="eyebrow sample-label">Example post · Try another tone to see it change</p>
+    </div>)}
+    {results.length > 0 && voice && <p className={voice.saved ? "voice-badge tuned" : "voice-badge"}>{voice.saved ? <>Tuned to your voice · learned from {voice.saved} saved caption{voice.saved === 1 ? "" : "s"}{voice.rejected ? ` and ${voice.rejected} you passed on` : ""}</> : <>Save the captions that sound like you, and your next ones will sound more like you.</>}</p>}
+    {results.length > 0 && <InstagramPreview photos={livePhotos.length ? livePhotos : previewPhotos} caption={(results.find(result => result.id === previewId) ?? results[0]).generated_text} handle={handle} avatarUrl={avatarUrl} />}
     {results.length > 0 && <p className="small-note">See how each caption looks on your post. Copy a favorite, or rate each option.</p>}
     <div className="caption-grid">{results.map((result, index) => <article className={result.id === previewId ? "caption-card previewing" : "caption-card"} key={result.id}>
       <button type="button" className="preview-toggle" aria-pressed={result.id === previewId} onClick={() => setPreviewId(result.id)}>{result.id === previewId ? `Option ${index + 1} · on your post` : `Option ${index + 1} · Preview on post`}</button>

@@ -10,14 +10,14 @@ export default async function Home() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return <main className="login-page">
-    <section className="login-card" aria-labelledby="login-title">
-      <CameraMark className="login-logo" />
-      <h1 id="login-title" className="login-wordmark">caption studio</h1>
-      <p className="login-tagline">Good photos. <em>Better captions.</em></p>
+    <header className="login-header"><span className="login-brand"><CameraMark className="login-logo" />caption studio</span></header>
+    <section className="login-hero" aria-labelledby="login-title">
+      <div className="login-orb" aria-hidden="true" />
+      <h1 id="login-title"><span>Good photos.</span><em>better captions.</em></h1>
+      <p className="login-note">Captions written for your photographs, in your own voice.</p>
       <GoogleLoginButton />
-      <p className="login-note">Sign in to caption your photos in your own voice.</p>
     </section>
-    <footer className="login-footer">Caption Studio ♡ Made for the moments worth sharing.</footer>
+    <footer className="login-footer"><span>Caption Studio</span><span>Made for the moments worth sharing</span></footer>
   </main>;
   const { data: profile } = await supabase.from("profiles").select("first_name, avatar_url").eq("id", user.id).maybeSingle();
   const handle = (profile?.first_name || user.email?.split("@")[0] || "you").toLowerCase().replace(/[^a-z0-9._]/g, "") || "you";

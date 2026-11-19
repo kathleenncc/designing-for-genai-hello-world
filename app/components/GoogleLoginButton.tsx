@@ -18,7 +18,7 @@ export default function GoogleLoginButton() {
 
     return (
         <button onClick={handleGoogleLogin}>
-            Sign in with Google
+            Continue with Google
         </button>
     );
 }

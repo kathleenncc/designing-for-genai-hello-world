@@ -93,7 +93,7 @@ export default function ProfileForm({
     };
 
     return (
-        <div>
+        <div className="profile-form">
             {currentAvatar && (
                 <div>
                     <img
