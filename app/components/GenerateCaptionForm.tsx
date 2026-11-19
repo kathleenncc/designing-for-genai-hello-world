@@ -4,13 +4,16 @@ import { useEffect, useRef, useState, type FormEvent, type ChangeEvent } from "r
 import { useRouter } from "next/navigation";
 
 import VoteButtons from "./VoteButtons";
+import InstagramPreview from "./InstagramPreview";
 
 const vibes = ["Casual", "Witty", "Chic", "Playful", "Minimal"];
-export default function GenerateCaptionForm({ userId }: { userId: string }) {
+export default function GenerateCaptionForm({ userId, handle, avatarUrl }: { userId: string; handle: string; avatarUrl?: string | null }) {
   const router = useRouter();
   const resultsRef = useRef<HTMLElement>(null);
   const [results, setResults] = useState<{ id: number; generated_text: string }[]>([]);
   const [copyMessage, setCopyMessage] = useState("");
+  const [previewPhotos, setPreviewPhotos] = useState<string[]>([]);
+  const [previewId, setPreviewId] = useState<number | null>(null);
   useEffect(() => {
     if (results.length) {
       resultsRef.current?.focus({ preventScroll: true });
@@ -92,6 +95,8 @@ export default function GenerateCaptionForm({ userId }: { userId: string }) {
       const response = await fetch("/api/generate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ photos: photos.map(photo => photo.data), vibe, length, context, examples }) });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Couldn’t generate captions. Please try again.");
+      setPreviewPhotos(photos.map(photo => photo.data));
+      setPreviewId(data.generations[0]?.id ?? null);
       setResults(data.generations);
       setMessage("Three captions saved to your account.");
       router.refresh();
@@ -133,8 +138,10 @@ export default function GenerateCaptionForm({ userId }: { userId: string }) {
   <section className="fresh-results" ref={resultsRef} tabIndex={-1} aria-labelledby="results-title">
     <p className="eyebrow">03 / YOUR WORDS</p><h2 id="results-title">{results.length ? "Which one feels like you?" : loading ? "Finding your words…" : "Your captions go here."}</h2>
     {!results.length && <div className="results-placeholder" role="status">{loading ? <><span className="loading-dot" aria-hidden="true" /><p>Considering your photos and your chosen vibe.<br />Three caption options are on their way.</p></> : <><span className="placeholder-mark" aria-hidden="true">✳</span><p>A little inspiration for your next post.<br />Add your photos and we’ll take it from here.</p></>}</div>}
-    {results.length > 0 && <p className="small-note">Saved to your account. Copy a favorite, or rate each option.</p>}
-    <div className="caption-grid">{results.map(result => <article className="caption-card" key={result.id}>
+    {results.length > 0 && <InstagramPreview photos={previewPhotos} caption={(results.find(result => result.id === previewId) ?? results[0]).generated_text} handle={handle} avatarUrl={avatarUrl} />}
+    {results.length > 0 && <p className="small-note">See how each caption looks on your post. Copy a favorite, or rate each option.</p>}
+    <div className="caption-grid">{results.map((result, index) => <article className={result.id === previewId ? "caption-card previewing" : "caption-card"} key={result.id}>
+      <button type="button" className="preview-toggle" aria-pressed={result.id === previewId} onClick={() => setPreviewId(result.id)}>{result.id === previewId ? `Option ${index + 1} · on your post` : `Option ${index + 1} · Preview on post`}</button>
       <p className="caption-text">{result.generated_text}</p>
       <button type="button" className="copy-caption" onClick={() => copyCaption(result.generated_text)}>Copy caption</button>
       <VoteButtons generationId={result.id} userId={userId} />
