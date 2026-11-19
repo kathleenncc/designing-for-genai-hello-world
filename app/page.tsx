@@ -1,7 +1,7 @@
 import CameraMark from "@/app/components/CameraMark";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/server";
-import GoogleLoginButton from "@/app/components/GoogleLoginButton";
+import LandingTeaser from "@/app/components/LandingTeaser";
 import SignOutButton from "@/app/components/SignOutButton";
 import GenerateCaptionForm from "@/app/components/GenerateCaptionForm";
 
@@ -26,7 +26,7 @@ export default async function Home() {
       {user ? <>
         <GenerateCaptionForm userId={user.id} handle={handle} avatarUrl={profile?.avatar_url ?? null} />
 
-      </> : <section className="welcome-card"><p className="eyebrow">LESS OVERTHINKING. MORE POSTING.</p><h2>Your photos already tell a story.</h2><p>Give them a caption to match. Sign in, add one photo or a whole dump, and choose your vibe.</p><GoogleLoginButton /><div className="sample-caption"><span className="eyebrow">EXAMPLE · CASUAL</span><p>camera roll made it out of drafts</p></div></section>}
+      </> : <LandingTeaser />}
       <footer>Caption Studio ♡ <span>Made for the moments worth sharing.</span></footer>
     </main>
   );
