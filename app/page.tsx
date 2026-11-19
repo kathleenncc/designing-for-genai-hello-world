@@ -2,6 +2,7 @@ import CameraMark from "@/app/components/CameraMark";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/server";
 import GoogleLoginButton from "@/app/components/GoogleLoginButton";
+import LoginCamera from "@/app/components/LoginCamera";
 import SignOutButton from "@/app/components/SignOutButton";
 import GenerateCaptionForm from "@/app/components/GenerateCaptionForm";
 
@@ -12,10 +13,12 @@ export default async function Home() {
   if (!user) return <main className="login-page">
     <header className="login-header"><span className="login-brand"><CameraMark className="login-logo" />caption studio</span></header>
     <section className="login-hero" aria-labelledby="login-title">
-      <div className="login-orb" aria-hidden="true" />
-      <h1 id="login-title"><span>Good photos.</span><em>better captions.</em></h1>
-      <p className="login-note">Captions written for your photographs, in your own voice.</p>
-      <GoogleLoginButton />
+      <div className="login-copy">
+        <h1 id="login-title"><span>Good photos.</span><em>better captions.</em></h1>
+        <p className="login-note">Captions written for your photographs, in your own voice.</p>
+        <GoogleLoginButton />
+      </div>
+      <LoginCamera />
     </section>
     <footer className="login-footer"><span>Caption Studio</span><span>Made for the moments worth sharing</span></footer>
   </main>;
