@@ -1,8 +1,8 @@
-export const samplePhotos = ["/sample-orchard.svg", "/sample-coffee.svg", "/sample-sunset.svg"];
+export const samplePhotos = ["/sample-coffee.svg", "/sample-arch.svg", "/sample-sea.svg"];
 export const sampleCaptions: Record<string, string> = {
-  Casual: "a little weekend upstate, mostly apples and good company",
-  Witty: "came for the apples, stayed because we got lost in the orchard",
-  Chic: "october, in soft focus.",
-  Playful: "certified apple pickers 🍎 (we ate half of them)",
-  Minimal: "upstate.",
+  Casual: "slow weekend, good coffee, saltwater in my hair",
+  Witty: "my love language is a café with good lighting",
+  Chic: "sunday, in soft focus.",
+  Playful: "out of office (emotionally) ☕️🌊",
+  Minimal: "lately.",
 };

@@ -2,6 +2,8 @@ import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import ProfileForm from "@/app/components/ProfileForm";
 import Link from "next/link";
+import CameraMark from "@/app/components/CameraMark";
+import SignOutButton from "@/app/components/SignOutButton";
 
 export default async function ProfilePage() {
     const supabase = await createClient();
@@ -22,11 +24,11 @@ export default async function ProfilePage() {
 
     return (
         <main className="page">
-            <h1>Your Profile</h1>
+            <header className="topbar"><Link className="wordmark" href="/"><CameraMark className="brand-camera" />caption studio</Link><nav aria-label="Account"><Link href="/">Create captions</Link><Link href="/captions">Saved captions</Link><SignOutButton /></nav></header>
+            <p className="eyebrow">Account</p>
+            <h1>Your <em>profile.</em></h1>
 
-            <p>
-                Signed in as: {user.email}
-            </p>
+            <p className="small-note">Signed in as {user.email}</p>
 
             <ProfileForm
                 userId={user.id}
