@@ -9,6 +9,8 @@ import GenerateCaptionForm from "@/app/components/GenerateCaptionForm";
 export default async function Home() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+  const { data: profile } = user ? await supabase.from("profiles").select("first_name, avatar_url").eq("id", user.id).maybeSingle() : { data: null };
+  const handle = (profile?.first_name || user?.email?.split("@")[0] || "you").toLowerCase().replace(/[^a-z0-9._]/g, "") || "you";
   return (
     <main className={user ? "page workspace-page" : "page"}>
       <header className="topbar">
@@ -22,7 +24,7 @@ export default async function Home() {
         <div className="steps"><span>01 / Add your photos</span><span>02 / Set the vibe</span><span>03 / Find your words</span></div>
       </section>}
       {user ? <>
-        <GenerateCaptionForm userId={user.id} />
+        <GenerateCaptionForm userId={user.id} handle={handle} avatarUrl={profile?.avatar_url ?? null} />
 
       </> : <section className="welcome-card"><p className="eyebrow">LESS OVERTHINKING. MORE POSTING.</p><h2>Your photos already tell a story.</h2><p>Give them a caption to match. Sign in, add one photo or a whole dump, and choose your vibe.</p><GoogleLoginButton /><div className="sample-caption"><span className="eyebrow">EXAMPLE · CASUAL</span><p>camera roll made it out of drafts</p></div></section>}
       <footer>Caption Studio ♡ <span>Made for the moments worth sharing.</span></footer>
