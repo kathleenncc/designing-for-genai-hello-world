@@ -2,6 +2,7 @@ import CameraMark from "@/app/components/CameraMark";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/server";
 import GoogleLoginButton from "@/app/components/GoogleLoginButton";
+import LoginCamera from "@/app/components/LoginCamera";
 import SignOutButton from "@/app/components/SignOutButton";
 import GenerateCaptionForm from "@/app/components/GenerateCaptionForm";
 
@@ -10,12 +11,14 @@ export default async function Home() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return <main className="login-page">
-    <header className="login-header"><span className="login-brand"><CameraMark className="login-logo" />caption studio</span></header>
+    <header className="login-header"><span className="login-brand"><CameraMark className="login-logo" /><span>caption <em>studio</em></span></span></header>
     <section className="login-hero" aria-labelledby="login-title">
-      <div className="login-orb" aria-hidden="true" />
-      <h1 id="login-title"><span>Good photos.</span><em>better captions.</em></h1>
-      <p className="login-note">Captions written for your photographs, in your own voice.</p>
-      <GoogleLoginButton />
+      <div className="login-copy">
+        <h1 id="login-title"><span>Good photos.</span><em>better captions.</em></h1>
+        <p className="login-note">Captions written for your photographs, in your own voice.</p>
+        <GoogleLoginButton />
+      </div>
+      <LoginCamera />
     </section>
     <footer className="login-footer"><span>Caption Studio</span><span>Made for the moments worth sharing</span></footer>
   </main>;
@@ -24,7 +27,7 @@ export default async function Home() {
   return (
     <main className="page workspace-page">
       <header className="topbar">
-        <Link className="wordmark" href="/"><CameraMark className="brand-camera" />caption studio</Link>
+        <Link className="wordmark" href="/"><CameraMark className="brand-camera" /><span>caption <em>studio</em></span></Link>
         <nav aria-label="Account"><Link href="/captions">Saved captions</Link><Link href="/profile">Your profile</Link><SignOutButton /></nav>
       </header>
       <GenerateCaptionForm userId={user.id} handle={handle} avatarUrl={profile?.avatar_url ?? null} />
