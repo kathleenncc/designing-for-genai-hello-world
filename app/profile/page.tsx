@@ -24,7 +24,7 @@ export default async function ProfilePage() {
 
     return (
         <main className="page">
-            <header className="topbar"><Link className="wordmark" href="/"><CameraMark className="brand-camera" />caption studio</Link><nav aria-label="Account"><Link href="/">Create captions</Link><Link href="/captions">Saved captions</Link><SignOutButton /></nav></header>
+            <header className="topbar"><Link className="wordmark" href="/"><CameraMark className="brand-camera" /><span>caption <em>studio</em></span></Link><nav aria-label="Account"><Link href="/">Create captions</Link><Link href="/captions">Saved captions</Link><SignOutButton /></nav></header>
             <p className="eyebrow">Account</p>
             <h1>Your <em>profile.</em></h1>
 

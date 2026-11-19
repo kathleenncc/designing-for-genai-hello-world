@@ -40,7 +40,8 @@ fieldset{margin:0;border:0;padding:0;min-width:0}
 .topbar{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:26px 0 30px}
 .wordmark{display:inline-flex;align-items:center;gap:10px;font-size:15px;font-weight:500;letter-spacing:-.02em}
 .wordmark:hover{text-decoration:none}
-.brand-camera{width:28px;height:28px;flex:none}
+.brand-camera{width:26px;height:26px;flex:none}
+.wordmark em,.login-brand em{font:italic 400 1.2em/1 var(--serif);letter-spacing:0}
 nav{display:flex;align-items:center;gap:28px;font-size:11px;letter-spacing:.14em;text-transform:uppercase}
 nav button{border:0;padding:0;border-radius:0;font-size:11px;letter-spacing:.14em;text-transform:uppercase}
 nav button:hover{text-decoration:underline;text-underline-offset:4px}
@@ -50,7 +51,7 @@ footer{display:flex;justify-content:space-between;gap:20px;border-top:1px solid 
 .login-page{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;padding:0 40px;overflow:hidden}
 .login-header{padding:26px 0}
 .login-brand{display:inline-flex;align-items:center;gap:10px;font-size:15px;font-weight:500;letter-spacing:-.02em}
-.login-logo{width:28px;height:28px}
+.login-logo{width:26px;height:26px}
 .login-footer{margin-top:0;border-top:0}
 .login-hero{flex:1;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);align-items:center;gap:40px;padding:24px 0 40px}
 .login-copy{position:relative;z-index:1}
