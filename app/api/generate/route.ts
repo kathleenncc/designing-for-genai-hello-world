@@ -51,9 +51,16 @@ export async function POST(request: Request) {
       const {error}=await supabase.from("cs_images").insert({user_id:user.id,request_id:attempt.id,storage_path:path,mime_type:image[1],alt_text:`Photo ${i+1} of ${images.length}`});
       if(error)return fail("The studio couldn’t save the photo details. Please try again.",500);
     }
+    // Learn the user's voice from captions they've rated before.
+    const {data:rated,error:ratedError}=await supabase.from("generations").select("generated_text, votes!inner(vote, user_id)").eq("user_id",user.id).eq("votes.user_id",user.id).like("prompt","[Caption Studio]%").order("created_at",{ascending:false}).limit(60);
+    if(ratedError)console.error("Voice history unavailable",ratedError.code);
+    const ratedCaptions=(rated??[]) as {generated_text:string;votes:{vote:number}[]}[];
+    const loved=ratedCaptions.filter(c=>c.votes?.[0]?.vote===1).slice(0,10).map(c=>c.generated_text);
+    const rejected=ratedCaptions.filter(c=>c.votes?.[0]?.vote===-1).slice(0,5).map(c=>c.generated_text);
+    const userVoice=loved.length||rejected.length?{captionsTheyLoved:loved,captionsTheyRejected:rejected,guidance:"Match the voice of captionsTheyLoved: tone, humor, capitalization, punctuation, length, and emoji habits. Steer away from the style of captionsTheyRejected. Never repeat any of these captions word for word."}:undefined;
     let previousOutput="";
     let lastSystemPrompt="";
-    const userPrompt=JSON.stringify({...input,studioTerms:config.terms,studioExamples:config.examples});
+    const userPrompt=JSON.stringify({...input,userVoice,studioTerms:config.terms,studioExamples:config.examples});
     for(const step of chain.steps){
       const stepStart=Date.now();
       lastSystemPrompt=step.instructions;
@@ -77,6 +84,6 @@ export async function POST(request: Request) {
     if(error)return fail("Captions couldn’t be saved. Please try again.",500);
     const {error:completionError}=await supabase.from("cs_generation_requests").update({status:"succeeded",duration_ms:Date.now()-started,error_message:null}).eq("id",attempt.id);
     if(completionError)console.error("Generation completion log unavailable",completionError.code);
-    return NextResponse.json({generations});
+    return NextResponse.json({generations,voice:{saved:loved.length,rejected:rejected.length}});
   }catch{return fail("The connection to the AI was interrupted. Please try again.");}
 }

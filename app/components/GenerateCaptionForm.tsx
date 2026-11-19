@@ -14,6 +14,7 @@ export default function GenerateCaptionForm({ userId, handle, avatarUrl }: { use
   const [copyMessage, setCopyMessage] = useState("");
   const [previewPhotos, setPreviewPhotos] = useState<string[]>([]);
   const [previewId, setPreviewId] = useState<number | null>(null);
+  const [voice, setVoice] = useState<{ saved: number; rejected: number } | null>(null);
   useEffect(() => {
     if (results.length) {
       resultsRef.current?.focus({ preventScroll: true });
@@ -97,6 +98,7 @@ export default function GenerateCaptionForm({ userId, handle, avatarUrl }: { use
       if (!response.ok) throw new Error(data.error || "Couldn’t generate captions. Please try again.");
       setPreviewPhotos(photos.map(photo => photo.data));
       setPreviewId(data.generations[0]?.id ?? null);
+      setVoice(data.voice ?? null);
       setResults(data.generations);
       setMessage("Three captions saved to your account.");
       router.refresh();
@@ -138,6 +140,7 @@ export default function GenerateCaptionForm({ userId, handle, avatarUrl }: { use
   <section className="fresh-results" ref={resultsRef} tabIndex={-1} aria-labelledby="results-title">
     <p className="eyebrow">03 / YOUR WORDS</p><h2 id="results-title">{results.length ? "Which one feels like you?" : loading ? "Finding your words…" : "Your captions go here."}</h2>
     {!results.length && <div className="results-placeholder" role="status">{loading ? <><span className="loading-dot" aria-hidden="true" /><p>Considering your photos and your chosen vibe.<br />Three caption options are on their way.</p></> : <><span className="placeholder-mark" aria-hidden="true">✳</span><p>A little inspiration for your next post.<br />Add your photos and we’ll take it from here.</p></>}</div>}
+    {results.length > 0 && voice && <p className={voice.saved ? "voice-badge tuned" : "voice-badge"}>{voice.saved ? <><span aria-hidden="true">✦</span> Tuned to your voice · learned from {voice.saved} saved caption{voice.saved === 1 ? "" : "s"}{voice.rejected ? ` and ${voice.rejected} you passed on` : ""}</> : <><span aria-hidden="true">✦</span> Save the captions that sound like you, and your next ones will sound more like you.</>}</p>}
     {results.length > 0 && <InstagramPreview photos={previewPhotos} caption={(results.find(result => result.id === previewId) ?? results[0]).generated_text} handle={handle} avatarUrl={avatarUrl} />}
     {results.length > 0 && <p className="small-note">See how each caption looks on your post. Copy a favorite, or rate each option.</p>}
     <div className="caption-grid">{results.map((result, index) => <article className={result.id === previewId ? "caption-card previewing" : "caption-card"} key={result.id}>

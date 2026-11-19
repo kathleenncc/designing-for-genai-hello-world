@@ -96,3 +96,6 @@ footer,.workspace-page footer{font-size:10px;padding:18px 0;border-color:#bdbdb5
 .fresh-results .caption-card .caption-text{margin-top:12px}
 @keyframes ig-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 @media(prefers-reduced-motion:reduce){.ig-post,.ig-text{animation:none}}
+.voice-badge{display:flex;gap:8px;align-items:flex-start;font-size:12px;line-height:1.5;color:var(--muted);background:white;border:1px dashed #c9c2b8;border-radius:10px;padding:9px 12px;margin:0 0 12px;animation:ig-in .35s ease-out}
+.voice-badge.tuned{color:var(--green);border:1px solid #e9c9da;background:#fdf3f8;font-weight:700}
+.voice-badge span{flex:none}
